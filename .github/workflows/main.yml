@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roblox Item Profit Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-slate-100">
+  <div class="max-w-4xl mx-auto bg-white/5 rounded-2xl p-6 shadow-2xl backdrop-blur">
+    <header class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Roblox Item Profit Calculator</h1>
+        <p class="text-sm text-slate-300 mt-1">เลือกตัวจากแมพ "Steal a brainrot" แล้วตั้งราคาต้นทุน/ราคาขาย ดูกำไรและผลตอบแทนอัตโนมัติ</p>
+      </div>
+      <div id="selectedChar" class="flex items-center gap-3"></div>
+    </header>
+
+    <main class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section class="col-span-2 bg-white/3 rounded-xl p-4">
+        <h2 class="font-semibold text-lg">ตั้งค่า</h2>
+        <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <label class="flex flex-col">
+            <span class="text-sm text-slate-300">ต้นทุนต่อชิ้น</span>
+            <input id="cost" type="number" value="10" class="mt-1 rounded-lg p-2 bg-white/5 outline-none">
+          </label>
+
+          <label class="flex flex-col">
+            <span class="text-sm text-slate-300">ราคาขายต่อชิ้น</span>
+            <input id="price" type="number" value="15" class="mt-1 rounded-lg p-2 bg-white/5 outline-none">
+          </label>
+
+          <label class="flex flex-col">
+            <span class="text-sm text-slate-300">จำนวนที่ซื้อ</span>
+            <input id="qty" type="number" value="10" class="mt-1 rounded-lg p-2 bg-white/5 outline-none">
+          </label>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="font-medium">เลือกตัวละคร</h3>
+          <div id="charList" class="mt-3 grid grid-cols-3 sm:grid-cols-6 gap-3"></div>
+        </div>
+      </section>
+
+      <aside class="bg-white/3 rounded-xl p-4 flex flex-col gap-3">
+        <h2 class="font-semibold text-lg">สรุปอัตโนมัติ</h2>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <div class="text-slate-300">ต้นทุนรวม</div>
+          <div id="totalInvested" class="text-right font-medium">0</div>
+
+          <div class="text-slate-300">ยอดขายรวม</div>
+          <div id="totalRevenue" class="text-right font-medium">0</div>
+
+          <div class="text-slate-300">กำไรต่อชิ้น</div>
+          <div id="profitPer" class="text-right font-medium">0</div>
+
+          <div class="text-slate-300">กำไรรวม</div>
+          <div id="totalProfit" class="text-right font-bold">0</div>
+
+          <div class="text-slate-300">ผลตอบแทน (ROI)</div>
+          <div id="roi" class="text-right font-medium">0%</div>
+        </div>
+
+        <div class="mt-3">
+          <div class="text-xs text-slate-300">คำอธิบาย</div>
+          <div class="text-sm mt-1">ยอดลงทุนคืนมา = ต้นทุนรวม + กำไร = <span id="totalReturn" class="font-semibold">0</span></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="mt-6 text-sm text-slate-400">
+      สามารถเปลี่ยนรูปตัวละครเป็นรูปจริงจากเกม Roblox ได้
+    </footer>
+  </div>
+
+  <script>
+    const sampleCharacters = [
+      { id:1, name:"Brainrot Thief", img:"https://placehold.co/100x100?text=Thief", defaultCost:10, defaultPrice:15 },
+      { id:2, name:"Sneaky Runner", img:"https://placehold.co/100x100?text=Runner", defaultCost:8, defaultPrice:12 },
+      { id:3, name:"Guard Bot", img:"https://placehold.co/100x100?text=Bot", defaultCost:20, defaultPrice:30 },
+    ];
+
+    let selected = sampleCharacters[0];
+
+    const costInput = document.getElementById("cost");
+    const priceInput = document.getElementById("price");
+    const qtyInput = document.getElementById("qty");
+
+    const totalInvestedEl = document.getElementById("totalInvested");
+    const totalRevenueEl = document.getElementById("totalRevenue");
+    const profitPerEl = document.getElementById("profitPer");
+    const totalProfitEl = document.getElementById("totalProfit");
+    const roiEl = document.getElementById("roi");
+    const totalReturnEl = document.getElementById("totalReturn");
+    const selectedCharEl = document.getElementById("selectedChar");
+
+    function format(n){return Number(n).toLocaleString();}
+
+    function updateSummary(){
+      const cost = Number(costInput.value);
+      const price = Number(priceInput.value);
+      const qty = Number(qtyInput.value);
+
+      const profitPer = price - cost;
+      const totalProfit = profitPer * qty;
+      const totalInvested = cost * qty;
+      const totalRevenue = price * qty;
+      const roi = totalInvested > 0 ? (totalProfit / totalInvested) * 100 : 0;
+
+      totalInvestedEl.textContent = format(totalInvested);
+      totalRevenueEl.textContent = format(totalRevenue);
+      profitPerEl.textContent = format(profitPer);
+      totalProfitEl.textContent = format(totalProfit);
+      roiEl.textContent = roi.toFixed(2) + "%";
+      totalReturnEl.textContent = format(totalInvested + totalProfit);
+
+      selectedCharEl.innerHTML = `
+        <img src="${selected.img}" class="w-12 h-12 rounded-md border border-white/10 shadow-xl">
+        <div class="text-right">
+          <div class="text-sm text-slate-300">ตัวที่เลือก</div>
+          <div class="font-semibold">${selected.name}</div>
+        </div>
+      `;
+    }
+
+    function renderCharacters(){
+      const charList = document.getElementById("charList");
+      charList.innerHTML = "";
+      sampleCharacters.forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = "flex flex-col items-center p-2 rounded-lg border-2 bg-white/3 hover:scale-105 transition";
+        btn.innerHTML = `<img src="${c.img}" class="w-16 h-16 rounded-md"><div class='text-xs mt-1 text-center'>${c.name}</div>`;
+        btn.onclick = ()=>{
+          selected = c;
+          costInput.value = c.defaultCost;
+          priceInput.value = c.defaultPrice;
+          updateSummary();
+        };
+        charList.appendChild(btn);
+      });
+    }
+
+    [costInput, priceInput, qtyInput].forEach(input=>{
+      input.addEventListener("input", updateSummary);
+    });
+
+    renderCharacters();
+    updateSummary();
+  </script>
+</body>
+</html>
